@@ -8,44 +8,49 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: "#E3F2FD",
-          100: "#BBDEFB",
-          200: "#90CAF9",
-          300: "#64B5F6",
-          400: "#42A5F5",
-          500: "#2196F3",
-          600: "#1E88E5",
-          700: "#1976D2",
-          800: "#1565C0",
-          900: "#0D47A1",    // primary dark blue
-          950: "#0A3880",
+        cream: {
+          50:  "#FDFAF4",
+          100: "#F8F1E4",
+          200: "#F0E6D0",
+          300: "#E6D9BC",
+          400: "#D8C8A4",
+          500: "#C4AE84",
         },
-        gold: {
-          400: "#FFCA28",
-          500: "#FFC107",
-          600: "#FFB300",
-          700: "#F57F17",    // accent gold
+        charcoal: {
+          700: "#3A3A3A",
+          800: "#2A2A2A",
+          900: "#1A1A1A",
+          950: "#0F0F0F",
         },
         forest: {
-          700: "#388E3C",
-          800: "#2E7D32",
-          900: "#1B5E20",    // success green
+          500: "#3A7A28",
+          600: "#2D6220",
+          700: "#224D18",
+          800: "#183910",
+          900: "#0F2509",
+        },
+        brand: {
+          50:  "#EBF5E4",
+          100: "#C9E3B4",
+          500: "#3A7A28",
+          900: "#183910",
+        },
+        gold: {
+          400: "#D4A843",
+          500: "#C49530",
+          600: "#A87E22",
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        sans:    ["Inter", "system-ui", "-apple-system", "sans-serif"],
         display: ["'Plus Jakarta Sans'", "Inter", "sans-serif"],
-      },
-      backgroundImage: {
-        "hero-pattern":
-          "linear-gradient(135deg, #0D47A1 0%, #1565C0 40%, #1B5E20 100%)",
-        "card-gradient":
-          "linear-gradient(135deg, #E3F2FD 0%, #F5F5F5 100%)",
+        serif:   ["'Playfair Display'", "Georgia", "'Times New Roman'", "serif"],
       },
       boxShadow: {
-        card: "0 2px 12px rgba(0,0,0,0.08)",
-        "card-hover": "0 8px 32px rgba(13,71,161,0.15)",
+        card:       "0 1px 4px rgba(0,0,0,0.06), 0 2px 12px rgba(0,0,0,0.04)",
+        "card-md":  "0 4px 24px rgba(0,0,0,0.09)",
+        "card-lg":  "0 8px 48px rgba(0,0,0,0.12)",
+        "card-hover": "0 8px 32px rgba(0,0,0,0.14)",
       },
     },
   },
