@@ -2,266 +2,215 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { CheckCircle, X, Zap, Building2, Users, ArrowRight } from "lucide-react";
-import { subscriptionsApi } from "@/lib/api";
+import { CheckCircle, ChevronDown, ChevronUp, ArrowRight, Search, FileText, Bell, BarChart2, Users, Zap } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
-import { cn, CURRENCIES, type Currency } from "@/lib/utils";
 
-const CURRENCY_SYMBOLS: Record<Currency, string> = { PKR: "₨", USD: "$", GBP: "£" };
-
-// Hard-coded plan data (also fetched from API when available)
-const PLANS = [
+const FEATURES = [
   {
-    key: "free",
-    name: "Free",
-    tagline: "For individuals exploring opportunities",
-    prices: { PKR: 0, USD: 0, GBP: 0 },
-    highlight: false,
-    icon: <Zap className="w-5 h-5" />,
-    features: [
-      { label: "10 tenders per month", included: true },
-      { label: "Basic tender listings", included: true },
-      { label: "Public data access", included: true },
-      { label: "AI summaries", included: false },
-      { label: "Word & PDF downloads", included: false },
-      { label: "Sector alerts", included: false },
-      { label: "Weekly digest", included: false },
-      { label: "API access", included: false },
-    ],
-    cta: "Get Started Free",
-    ctaHref: "/auth/signup",
+    icon: <Search className="w-5 h-5" />,
+    title: "Full Tender Explorer",
+    desc: "Search and filter the complete PPRA procurement database with advanced filters by sector, value, deadline, and ministry.",
   },
   {
-    key: "pro",
-    name: "Pro",
-    tagline: "For SMEs actively bidding on contracts",
-    prices: { PKR: 4999, USD: 18, GBP: 14 },
-    highlight: true,
-    icon: <Building2 className="w-5 h-5" />,
-    badge: "Most Popular",
-    features: [
-      { label: "Unlimited tenders", included: true },
-      { label: "AI-powered summaries", included: true },
-      { label: "Word & PDF report downloads", included: true },
-      { label: "Sector & keyword alerts", included: true },
-      { label: "Weekly digest email", included: true },
-      { label: "Opportunity scoring (0-100)", included: true },
-      { label: "SME insights & recommendations", included: true },
-      { label: "API access", included: false },
-    ],
-    cta: "Start Pro Plan",
-    ctaHref: "/dashboard?upgrade=pro",
+    icon: <FileText className="w-5 h-5" />,
+    title: "AI-Powered Summaries",
+    desc: "Instantly understand any tender with plain-language AI summaries highlighting requirements, eligibility, and key deadlines.",
   },
   {
-    key: "enterprise",
-    name: "Enterprise",
-    tagline: "For consultancies and larger teams",
-    prices: { PKR: 14999, USD: 54, GBP: 42 },
-    highlight: false,
+    icon: <Bell className="w-5 h-5" />,
+    title: "Sector Alerts",
+    desc: "Get notified when new tenders matching your keywords and sectors are published — delivered to your inbox.",
+  },
+  {
+    icon: <BarChart2 className="w-5 h-5" />,
+    title: "Opportunity Scoring",
+    desc: "Each tender gets a 0–100 fit score based on your sector profile so you focus on the best opportunities.",
+  },
+  {
     icon: <Users className="w-5 h-5" />,
-    features: [
-      { label: "Everything in Pro", included: true },
-      { label: "5 user seats", included: true },
-      { label: "REST API access", included: true },
-      { label: "Custom alert workflows", included: true },
-      { label: "Priority email support", included: true },
-      { label: "Dedicated account manager", included: true },
-      { label: "Custom sector reports", included: true },
-      { label: "SLA guarantee", included: true },
-    ],
-    cta: "Start Enterprise Plan",
-    ctaHref: "/dashboard?upgrade=enterprise",
+    title: "SME Intelligence",
+    desc: "Tailored insights and bid strategy recommendations specifically designed for Pakistani small and medium enterprises.",
   },
+  {
+    icon: <Zap className="w-5 h-5" />,
+    title: "Weekly Digest",
+    desc: "A curated weekly email summary of top tenders in your sectors — stay informed without logging in every day.",
+  },
+];
+
+const INCLUDED = [
+  "Unlimited tender browsing",
+  "AI summaries for every tender",
+  "Sector & keyword alerts",
+  "Weekly digest email",
+  "Opportunity fit scoring",
+  "Word & PDF report downloads",
+  "SME bid strategy insights",
+  "Data from official data.gov.pk sources",
 ];
 
 const FAQS = [
   {
-    q: "How is the data collected?",
-    a: "We use the official CKAN API from data.gov.pk to pull PPRA and other government procurement datasets daily. All data is publicly available.",
+    q: "Is TenderIQ Pakistan really free?",
+    a: "Yes — during our launch phase, all features are completely free for registered users. We're focused on helping Pakistani SMEs access procurement opportunities without barriers.",
   },
   {
-    q: "Can I pay in Pakistani Rupees?",
-    a: "Yes! We accept PKR via Stripe (Visa, Mastercard, Amex) and Easypaisa mobile wallet for Pakistan-based users.",
+    q: "Where does the tender data come from?",
+    a: "All data is sourced from the official CKAN API at data.gov.pk, which publishes PPRA procurement notices as open government data. We refresh daily.",
   },
   {
     q: "What AI model powers the summaries?",
-    a: "We use Anthropic's Claude — one of the world's most capable AI models — specifically prompted for Pakistan's procurement context.",
+    a: "We use Anthropic's Claude — one of the world's leading AI models — specifically configured for Pakistan's government procurement context.",
   },
   {
-    q: "Can I cancel my subscription?",
-    a: "Absolutely. Cancel any time from your dashboard. You'll keep access until the end of your billing period.",
+    q: "Do I need a credit card to sign up?",
+    a: "No. There is no payment required. Simply register with your email and you get full access immediately.",
   },
   {
-    q: "Is there an annual discount?",
-    a: "Yes — annual plans save you 20%. Contact us or select 'Annual' during checkout.",
+    q: "Can I use TenderIQ for my consultancy firm?",
+    a: "Absolutely. Multiple team members can register individually. If you need a shared team workspace or API access, contact us and we'll work something out.",
+  },
+  {
+    q: "Will you charge in the future?",
+    a: "We may introduce optional premium features down the road, but we're committed to keeping the core platform accessible. Early registrants will always be looked after.",
   },
 ];
 
 export default function PricingPage() {
-  const [currency, setCurrency] = useState<Currency>("PKR");
-  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
-
-  const annualMultiplier = billing === "annual" ? 0.8 : 1;
-
-  function displayPrice(prices: Record<Currency, number>): string {
-    const raw = prices[currency] * annualMultiplier;
-    if (raw === 0) return "Free";
-    const sym = CURRENCY_SYMBOLS[currency];
-    if (currency === "PKR") return `${sym} ${Math.round(raw).toLocaleString("en-PK")}`;
-    return `${sym} ${raw.toFixed(0)}`;
-  }
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-cream-100">
       <Navbar />
 
-      {/* Hero */}
-      <section className="py-16 bg-gray-50 text-center">
-        <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-4xl font-bold font-display text-brand-900 mb-4">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="text-gray-500 text-lg mb-8">
-            Pay in PKR, USD, or GBP. Switch plans anytime. Cancel with one click.
+      {/* ── Hero ── */}
+      <section className="py-24 bg-cream-100 text-center border-b border-cream-300">
+        <div className="max-w-3xl mx-auto px-6">
+          <p className="text-xs tracking-widest uppercase text-charcoal-700 mb-5 font-semibold">
+            Access &amp; Pricing
           </p>
+          <h1 className="font-serif text-5xl md:text-6xl text-charcoal-900 mb-6 leading-tight">
+            Free for Pakistani SMEs
+          </h1>
+          <div className="w-12 h-px bg-charcoal-900 mx-auto mb-8" />
+          <p className="text-lg text-charcoal-700 leading-relaxed max-w-xl mx-auto mb-10">
+            TenderIQ Pakistan is completely free during our launch phase.
+            Register today and get full access to AI-powered procurement intelligence — no credit card, no subscription.
+          </p>
+          <Link href="/auth/signup" className="btn-dark inline-flex items-center gap-3 text-sm tracking-widest uppercase">
+            Create Free Account <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
 
-          {/* Currency switcher */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <div className="flex bg-white rounded-xl border border-gray-200 p-1">
-              {CURRENCIES.map((c) => (
-                <button key={c} onClick={() => setCurrency(c)}
-                  className={cn("px-4 py-2 rounded-lg text-sm font-semibold transition-all",
-                    currency === c
-                      ? "bg-brand-900 text-white shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  )}>
-                  {c}
-                </button>
-              ))}
+      {/* ── What's included ── */}
+      <section className="py-24 bg-white border-b border-cream-300">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+
+            {/* Left: heading */}
+            <div>
+              <p className="text-xs tracking-widest uppercase text-charcoal-700 mb-4 font-semibold">Everything Included</p>
+              <h2 className="font-serif text-4xl text-charcoal-900 mb-6 leading-tight">
+                Full platform access.<br />No restrictions.
+              </h2>
+              <div className="w-10 h-px bg-charcoal-900 mb-8" />
+              <p className="text-charcoal-700 leading-relaxed mb-10">
+                Every registered user gets the complete TenderIQ platform. We believe Pakistani SMEs deserve the same procurement intelligence as large corporations — without the price tag.
+              </p>
+              <ul className="space-y-3">
+                {INCLUDED.map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm text-charcoal-800">
+                    <CheckCircle className="w-4 h-4 text-forest-600 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="flex bg-white rounded-xl border border-gray-200 p-1">
-              {(["monthly", "annual"] as const).map((b) => (
-                <button key={b} onClick={() => setBilling(b)}
-                  className={cn("px-4 py-2 rounded-lg text-sm font-semibold transition-all capitalize",
-                    billing === b
-                      ? "bg-brand-900 text-white shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  )}>
-                  {b}
-                  {b === "annual" && <span className="ml-1.5 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">−20%</span>}
-                </button>
+
+            {/* Right: feature cards */}
+            <div className="grid sm:grid-cols-2 gap-5">
+              {FEATURES.map((f) => (
+                <div key={f.title} className="border border-cream-300 bg-cream-50 p-6 hover:border-charcoal-900 hover:bg-charcoal-900 hover:text-white group transition-all duration-300">
+                  <div className="w-9 h-9 border border-current flex items-center justify-center mb-4 text-charcoal-900 group-hover:text-white transition-colors">
+                    {f.icon}
+                  </div>
+                  <h3 className="font-semibold text-sm text-charcoal-900 group-hover:text-white mb-2 transition-colors">{f.title}</h3>
+                  <p className="text-xs text-charcoal-700 group-hover:text-cream-300 leading-relaxed transition-colors">{f.desc}</p>
+                </div>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Plans grid */}
-      <section className="py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-6 items-start">
-            {PLANS.map((plan) => (
-              <div key={plan.key}
-                className={cn(
-                  "rounded-2xl border-2 p-8 relative",
-                  plan.highlight
-                    ? "border-brand-900 shadow-card-hover scale-105"
-                    : "border-gray-200 shadow-card"
-                )}>
-                {plan.badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="bg-brand-900 text-white text-xs font-bold px-4 py-1 rounded-full">
-                      {plan.badge}
-                    </span>
-                  </div>
+      {/* ── Sign-up CTA strip ── */}
+      <section className="py-16 bg-charcoal-900 text-center">
+        <div className="max-w-2xl mx-auto px-6">
+          <h2 className="font-serif text-3xl text-cream-100 mb-4">Start in under two minutes</h2>
+          <p className="text-cream-400 text-sm mb-8 leading-relaxed">
+            Register with your email, set your sectors and keywords, and receive your first tender alerts today.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/auth/signup" className="btn-dark bg-cream-100 text-charcoal-900 hover:bg-cream-200 inline-flex items-center gap-2 justify-center text-sm tracking-widest uppercase px-8 py-3 font-semibold transition-all">
+              Get Free Access <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link href="/tenders" className="btn-outline-dark border-cream-400 text-cream-200 hover:bg-cream-100 hover:text-charcoal-900 inline-flex items-center gap-2 justify-center text-sm tracking-widest uppercase px-8 py-3 font-semibold transition-all">
+              Browse Tenders First
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="py-24 bg-cream-100">
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <p className="text-xs tracking-widest uppercase text-charcoal-700 mb-4 font-semibold">Common Questions</p>
+            <h2 className="font-serif text-4xl text-charcoal-900">Frequently Asked</h2>
+            <div className="w-10 h-px bg-charcoal-900 mx-auto mt-6" />
+          </div>
+
+          <div className="space-y-0 border-t border-cream-300">
+            {FAQS.map((faq, i) => (
+              <div key={faq.q} className="border-b border-cream-300">
+                <button
+                  className="w-full text-left py-5 flex items-start justify-between gap-4 group"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                >
+                  <span className="font-semibold text-sm text-charcoal-900 group-hover:text-charcoal-700 transition-colors leading-relaxed pr-4">
+                    {faq.q}
+                  </span>
+                  {openFaq === i
+                    ? <ChevronUp className="w-4 h-4 text-charcoal-700 flex-shrink-0 mt-0.5" />
+                    : <ChevronDown className="w-4 h-4 text-charcoal-700 flex-shrink-0 mt-0.5" />}
+                </button>
+                {openFaq === i && (
+                  <p className="text-sm text-charcoal-700 leading-relaxed pb-5">
+                    {faq.a}
+                  </p>
                 )}
-
-                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-4",
-                  plan.highlight ? "bg-brand-900 text-white" : "bg-gray-100 text-gray-600")}>
-                  {plan.icon}
-                </div>
-
-                <h2 className="text-xl font-bold text-gray-900 font-display">{plan.name}</h2>
-                <p className="text-gray-500 text-sm mt-1 mb-5">{plan.tagline}</p>
-
-                <div className="mb-6">
-                  <div className="text-4xl font-bold text-brand-900 font-display">
-                    {displayPrice(plan.prices)}
-                  </div>
-                  {plan.prices[currency] > 0 && (
-                    <div className="text-gray-400 text-sm mt-1">per user / {billing === "annual" ? "year" : "month"}</div>
-                  )}
-                </div>
-
-                <Link href={plan.ctaHref}
-                  className={cn("w-full py-3 px-6 rounded-lg font-semibold text-sm text-center flex items-center justify-center gap-2 transition-all",
-                    plan.highlight
-                      ? "bg-brand-900 text-white hover:bg-brand-800"
-                      : "border-2 border-brand-900 text-brand-900 hover:bg-brand-50"
-                  )}>
-                  {plan.cta} <ArrowRight className="w-4 h-4" />
-                </Link>
-
-                <div className="mt-6 space-y-3 border-t border-gray-100 pt-6">
-                  {plan.features.map((f) => (
-                    <div key={f.label} className="flex items-center gap-3">
-                      {f.included
-                        ? <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        : <X className="w-4 h-4 text-gray-300 flex-shrink-0" />}
-                      <span className={cn("text-sm", f.included ? "text-gray-700" : "text-gray-400")}>
-                        {f.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Payment methods */}
-          <div className="mt-12 text-center">
-            <p className="text-gray-400 text-sm mb-4">Secure payments powered by</p>
-            <div className="flex items-center justify-center gap-6 flex-wrap">
-              {["💳 Visa", "💳 Mastercard", "💳 American Express", "🏧 Easypaisa", "🏧 JazzCash"].map((method) => (
-                <span key={method} className="bg-gray-100 text-gray-600 text-sm px-3 py-1.5 rounded-lg font-medium">
-                  {method}
-                </span>
-              ))}
-            </div>
-            <p className="text-xs text-gray-400 mt-3">All transactions are secured with 256-bit SSL encryption</p>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-3xl font-bold font-display text-brand-900 text-center mb-10">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-4">
-            {FAQS.map((faq) => (
-              <div key={faq.q} className="card">
-                <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 bg-brand-900 text-center">
-        <div className="max-w-2xl mx-auto px-4">
-          <h2 className="text-3xl font-bold font-display text-white mb-4">
-            Ready to Win More Government Contracts?
-          </h2>
-          <p className="text-white/70 mb-8">Start with our free plan — no credit card required.</p>
-          <Link href="/auth/signup"
-            className="bg-gold-700 hover:bg-gold-600 text-white px-10 py-4 rounded-xl font-bold text-lg inline-flex items-center gap-2 transition-all">
-            Get Started Free <ArrowRight className="w-5 h-5" />
+      {/* ── Contact strip ── */}
+      <section className="py-16 bg-cream-200 border-t border-cream-300 text-center">
+        <div className="max-w-xl mx-auto px-6">
+          <p className="text-xs tracking-widest uppercase text-charcoal-700 mb-3 font-semibold">Still Have Questions?</p>
+          <h3 className="font-serif text-2xl text-charcoal-900 mb-4">We&apos;re here to help</h3>
+          <p className="text-sm text-charcoal-700 mb-6">
+            Email us at{" "}
+            <a href="mailto:support@tenderiq.pk" className="text-charcoal-900 underline underline-offset-2 font-medium hover:text-forest-700 transition-colors">
+              support@tenderiq.pk
+            </a>{" "}
+            or reach out via the contact form on our homepage.
+          </p>
+          <Link href="/#contact" className="btn-outline-dark text-sm tracking-widest uppercase inline-flex items-center gap-2 px-8 py-3">
+            Contact Us
           </Link>
         </div>
       </section>
