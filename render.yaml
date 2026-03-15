@@ -56,7 +56,7 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: ALLOWED_ORIGINS
-        value: https://tender-intelligence-rg5fle24d-wishsherys-projects.vercel.app
+        value: https://tender-intelligence-pk.vercel.app,https://tender-intelligence-pk-git-main-wishsherys-projects.vercel.app
 
 databases:
   - name: tenderiq-db
