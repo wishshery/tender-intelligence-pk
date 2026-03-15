@@ -2,6 +2,12 @@
 # https://render.com/docs/blueprint-spec
 
 services:
+  # ── Redis (Key Value) ───────────────────────────────────────
+  - type: redis
+    name: tenderiq-redis
+    plan: starter
+    ipAllowList: []
+
   # ── FastAPI Backend ────────────────────────────────────────
   - type: web
     name: tenderiq-api
@@ -47,7 +53,7 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: ALLOWED_ORIGINS
-        sync: false   # set to your Vercel/frontend URL
+        sync: false   # set to your frontend URL after deploy
 
   # ── Celery Worker ──────────────────────────────────────────
   - type: worker
@@ -124,8 +130,3 @@ databases:
     databaseName: tenderiq_db
     user: tenderiq
     plan: starter
-
-  - name: tenderiq-redis
-    type: redis
-    plan: starter
-    ipAllowList: []
