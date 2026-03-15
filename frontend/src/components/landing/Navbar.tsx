@@ -2,84 +2,89 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, Building2 } from "lucide-react";
+import { X, Menu } from "lucide-react";
 import { useAuthStore } from "@/lib/auth";
+
+const NAV_LINKS = [
+  { href: "/tenders",   label: "Tenders" },
+  { href: "/#services", label: "Services" },
+  { href: "/#about",    label: "About" },
+  { href: "/#contact",  label: "Contact" },
+];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { isAuthenticated } = useAuthStore();
 
-  const links = [
-    { href: "/tenders", label: "Tenders" },
-    { href: "/pricing", label: "Pricing" },
-    { href: "/#features", label: "Features" },
-  ];
-
   return (
-    <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-cream-100 border-b border-cream-300 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-16">
+
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-brand-900 rounded-lg flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span className="font-bold text-brand-900 text-lg font-display">TenderIQ</span>
-              <span className="text-gold-700 text-sm font-medium ml-1">Pakistan</span>
-            </div>
+            <span className="w-7 h-7 rounded-full bg-charcoal-900 flex items-center justify-center text-cream-100 text-xs font-bold font-serif">
+              T
+            </span>
+            <span className="font-serif text-xl text-charcoal-900 tracking-tight">TenderIQ</span>
+            <span className="text-forest-600 text-sm font-semibold ml-0.5">PK</span>
           </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-8">
-            {links.map((l) => (
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-10">
+            {NAV_LINKS.map((l) => (
               <Link key={l.href} href={l.href}
-                className="text-gray-600 hover:text-brand-900 font-medium transition-colors text-sm">
+                className="text-sm text-charcoal-800 hover:text-charcoal-900 transition-colors tracking-wide">
                 {l.label}
               </Link>
             ))}
           </div>
 
-          {/* Auth buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Desktop CTA */}
+          <div className="hidden md:flex items-center gap-4">
             {isAuthenticated ? (
-              <Link href="/dashboard" className="btn-primary py-2 px-4 text-sm">
-                Dashboard
-              </Link>
+              <Link href="/dashboard" className="btn-dark text-sm px-5 py-2">Dashboard</Link>
             ) : (
               <>
-                <Link href="/auth/login" className="text-gray-600 hover:text-brand-900 font-medium text-sm">
+                <Link href="/auth/login"
+                  className="text-sm text-charcoal-800 hover:text-charcoal-900 font-medium transition-colors">
                   Sign In
                 </Link>
-                <Link href="/auth/signup" className="btn-primary py-2 px-5 text-sm">
+                <Link href="/auth/signup" className="btn-dark text-sm px-5 py-2">
                   Get Started Free
                 </Link>
               </>
             )}
           </div>
 
-          {/* Mobile menu toggle */}
-          <button className="md:hidden" onClick={() => setOpen(!open)}>
-            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {/* Mobile toggle */}
+          <button
+            className="md:hidden p-1.5 border border-charcoal-800 text-charcoal-900"
+            onClick={() => setOpen(!open)} aria-label="Toggle menu">
+            {open ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
-
-        {/* Mobile menu */}
-        {open && (
-          <div className="md:hidden border-t border-gray-100 py-4 space-y-3">
-            {links.map((l) => (
-              <Link key={l.href} href={l.href}
-                className="block py-2 text-gray-700 font-medium" onClick={() => setOpen(false)}>
-                {l.label}
-              </Link>
-            ))}
-            <div className="flex flex-col gap-2 pt-3 border-t border-gray-100">
-              <Link href="/auth/login" className="btn-outline py-2 text-center text-sm" onClick={() => setOpen(false)}>Sign In</Link>
-              <Link href="/auth/signup" className="btn-primary py-2 text-center text-sm" onClick={() => setOpen(false)}>Get Started Free</Link>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden border-t border-cream-300 bg-cream-100 px-6 py-5 space-y-4">
+          {NAV_LINKS.map((l) => (
+            <Link key={l.href} href={l.href}
+              className="block text-sm text-charcoal-800 font-medium" onClick={() => setOpen(false)}>
+              {l.label}
+            </Link>
+          ))}
+          <div className="flex flex-col gap-3 pt-4 border-t border-cream-300">
+            <Link href="/auth/login"
+              className="text-sm text-center py-2.5 border border-charcoal-900 text-charcoal-900 font-medium hover:bg-charcoal-900 hover:text-white transition-colors"
+              onClick={() => setOpen(false)}>Sign In</Link>
+            <Link href="/auth/signup"
+              className="text-sm text-center py-2.5 bg-charcoal-900 text-white font-medium hover:bg-charcoal-800 transition-colors"
+              onClick={() => setOpen(false)}>Get Started Free</Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
