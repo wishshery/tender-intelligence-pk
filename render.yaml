@@ -5,13 +5,14 @@ services:
   # ── Redis (Key Value) ───────────────────────────────────────
   - type: redis
     name: tenderiq-redis
-    plan: starter
+    plan: free
     ipAllowList: []
 
   # ── FastAPI Backend ────────────────────────────────────────
   - type: web
     name: tenderiq-api
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     rootDir: backend
@@ -20,7 +21,7 @@ services:
       - key: APP_ENV
         value: production
       - key: DEBUG
-        value: false
+        value: "false"
       - key: DATABASE_URL
         fromDatabase:
           name: tenderiq-db
@@ -43,7 +44,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: ANTHROPIC_API_KEY
-        sync: false   # set manually in Render dashboard
+        sync: false
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_PUBLISHABLE_KEY
@@ -53,12 +54,13 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: ALLOWED_ORIGINS
-        sync: false   # set to your frontend URL after deploy
+        sync: false
 
   # ── Celery Worker ──────────────────────────────────────────
   - type: worker
     name: tenderiq-worker
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2
     rootDir: backend
@@ -93,6 +95,7 @@ services:
   - type: worker
     name: tenderiq-beat
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: celery -A app.workers.celery_app beat --loglevel=info
     rootDir: backend
@@ -107,26 +110,8 @@ services:
           type: redis
           property: connectionString
 
-  # ── Next.js Frontend ───────────────────────────────────────
-  - type: web
-    name: tenderiq-frontend
-    runtime: node
-    buildCommand: npm install && npm run build
-    startCommand: npm start
-    rootDir: frontend
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
-        fromService:
-          name: tenderiq-api
-          type: web
-          property: host
-          prepend: "https://"
-          append: "/api/v1"
-      - key: NEXT_PUBLIC_STRIPE_PK
-        sync: false
-
 databases:
   - name: tenderiq-db
     databaseName: tenderiq_db
     user: tenderiq
-    plan: starter
+    plan: free
